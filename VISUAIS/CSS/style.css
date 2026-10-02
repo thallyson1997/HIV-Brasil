@@ -1,306 +1,909 @@
 :root {
-  color-scheme: light;
-  --ink: #1d2b25;
-  --muted: #758078;
-  --line: #e5eae5;
-  --green: #22836f;
-  --canvas: #f4f7f2;
-  --surface: #ffffff;
+color-scheme: light;
+
+--ink: #1d2b25;
+--muted: #758078;
+--line: #e5eae5;
+
+--green: #22836f;
+--green-dark: #155d50;
+--green-soft: #e5f1e9;
+
+--canvas: #f4f7f2;
+--surface: #ffffff;
+
+--danger: #9a4a3f;
 }
 
 * {
   box-sizing: border-box;
-}
+  }
 
 [hidden] {
-  display: none !important;
+display: none !important;
+}
+
+html {
+scroll-behavior: smooth;
 }
 
 body {
-  min-width: 320px;
-  min-height: 100vh;
-  margin: 0;
-  background-color: var(--canvas);
-  background-image: radial-gradient(#dce6dd 0.7px, transparent 0.7px);
-  background-size: 18px 18px;
-  color: var(--ink);
-  font-family: "DM Sans", sans-serif;
-  -webkit-font-smoothing: antialiased;
+min-width: 320px;
+min-height: 100vh;
+margin: 0;
+
+background-color: var(--canvas);
+background-image:
+radial-gradient(#dce6dd 0.7px, transparent 0.7px);
+background-size: 18px 18px;
+
+color: var(--ink);
+font-family: "DM Sans", sans-serif;
+
+-webkit-font-smoothing: antialiased;
 }
+
+/* =========================================================
+LAYOUT PRINCIPAL
+========================================================= */
 
 .dashboard {
-  width: min(100% - 48px, 1080px);
-  margin: 0 auto;
+width: min(100% - 48px, 1180px);
+margin: 0 auto;
 }
 
+/* =========================================================
+TOPO
+========================================================= */
+
 .topbar {
-  display: flex;
-  min-height: 76px;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(29, 43, 37, 0.1);
+display: flex;
+min-height: 76px;
+
+align-items: center;
+justify-content: space-between;
+
+border-bottom: 1px solid rgba(29, 43, 37, 0.1);
 }
 
 .brand,
 .location {
-  display: inline-flex;
-  align-items: center;
+display: inline-flex;
+align-items: center;
 }
 
 .brand {
-  gap: 10px;
-  color: var(--ink);
-  text-decoration: none;
+gap: 10px;
+
+color: var(--ink);
+text-decoration: none;
 }
 
 .brand-mark {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border-radius: 50%;
-  background: #d8e9df;
-  color: #1d6757;
-  font-family: "Manrope", sans-serif;
-  font-size: 11px;
-  font-weight: 800;
+display: grid;
+
+width: 34px;
+height: 34px;
+
+place-items: center;
+
+border-radius: 50%;
+
+background: #d8e9df;
+color: #1d6757;
+
+font-family: "Manrope", sans-serif;
+font-size: 11px;
+font-weight: 800;
 }
 
 .brand-name {
-  font-family: "Manrope", sans-serif;
-  font-size: 13px;
-  font-weight: 800;
+font-family: "Manrope", sans-serif;
+font-size: 13px;
+font-weight: 800;
 }
 
 .brand-name span {
-  padding: 0 3px;
-  color: #a1aaa4;
-  font-weight: 500;
+padding: 0 3px;
+
+color: #a1aaa4;
+font-weight: 500;
 }
 
 .location {
-  gap: 8px;
-  color: #58645c;
-  font-size: 12px;
-  font-weight: 600;
+gap: 8px;
+
+color: #58645c;
+font-size: 12px;
+font-weight: 600;
 }
 
 .location-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #d09348;
-  box-shadow: 0 0 0 3px #f1e5d4;
+width: 7px;
+height: 7px;
+
+border-radius: 50%;
+
+background: #d09348;
+box-shadow: 0 0 0 3px #f1e5d4;
 }
 
+/* =========================================================
+INTRODUÇÃO
+========================================================= */
+
 .intro {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 48px 0 34px;
+display: flex;
+
+align-items: flex-end;
+justify-content: space-between;
+
+gap: 24px;
+
+padding: 48px 0 34px;
+}
+
+.intro-content {
+min-width: 0;
 }
 
 .eyebrow {
-  margin: 0 0 10px;
-  color: var(--green);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
+margin: 0 0 10px;
+
+color: var(--green);
+
+font-size: 11px;
+font-weight: 700;
+
+letter-spacing: 1.1px;
+text-transform: uppercase;
 }
 
 h1,
 h2,
 p {
-  margin-top: 0;
+margin-top: 0;
 }
 
 h1 {
-  margin-bottom: 8px;
-  font-family: "Manrope", sans-serif;
-  font-size: clamp(27px, 4vw, 36px);
-  font-weight: 700;
-  line-height: 1.2;
+margin-bottom: 8px;
+
+font-family: "Manrope", sans-serif;
+font-size: clamp(27px, 4vw, 36px);
+font-weight: 700;
+
+line-height: 1.2;
 }
 
 .subtitle {
-  margin-bottom: 0;
-  color: var(--muted);
-  font-size: 14px;
+max-width: 650px;
+
+margin-bottom: 0;
+
+color: var(--muted);
+font-size: 14px;
+}
+
+/* =========================================================
+FILTRO DE ANO
+========================================================= */
+
+.filters {
+flex-shrink: 0;
 }
 
 .year-control {
-  display: grid;
-  min-width: 168px;
-  gap: 7px;
-  color: #59665e;
-  font-size: 11px;
-  font-weight: 600;
+display: grid;
+
+min-width: 168px;
+
+gap: 7px;
+
+color: #59665e;
+
+font-size: 11px;
+font-weight: 600;
 }
 
 .year-control select {
-  width: 100%;
-  height: 42px;
-  padding: 0 34px 0 12px;
-  border: 1px solid #d9e0d9;
-  border-radius: 5px;
-  background: var(--surface);
-  color: var(--ink);
-  font: 600 14px "DM Sans", sans-serif;
+width: 100%;
+height: 42px;
+
+padding: 0 34px 0 12px;
+
+border: 1px solid #d9e0d9;
+border-radius: 5px;
+
+background: var(--surface);
+color: var(--ink);
+
+font: 600 14px "DM Sans", sans-serif;
+
+cursor: pointer;
+}
+
+.year-control select:hover {
+border-color: #bcc9c0;
 }
 
 .year-control select:focus-visible {
-  outline: 3px solid rgba(34, 131, 111, 0.22);
-  outline-offset: 2px;
+outline: 3px solid rgba(34, 131, 111, 0.22);
+outline-offset: 2px;
 }
 
+/* =========================================================
+RESUMO GERAL
+========================================================= */
+
 .summary {
-  padding: 20px 24px 18px;
-  border: 1px solid #e5eae5;
-  border-left: 3px solid var(--green);
-  background: var(--surface);
+padding: 20px 24px 18px;
+
+border: 1px solid var(--line);
+border-left: 3px solid var(--green);
+
+background: var(--surface);
 }
 
 .summary-label {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: #68756d;
-  font-size: 12px;
-  font-weight: 600;
+display: flex;
+
+align-items: center;
+gap: 9px;
+
+color: #68756d;
+
+font-size: 12px;
+font-weight: 600;
 }
 
 .summary-icon {
-  display: grid;
-  width: 20px;
-  height: 20px;
-  place-items: center;
-  border-radius: 50%;
-  background: #e5f1e9;
-  color: #227460;
-  font-size: 15px;
+display: grid;
+
+width: 20px;
+height: 20px;
+
+place-items: center;
+
+border-radius: 50%;
+
+background: var(--green-soft);
+color: #227460;
+
+font-size: 15px;
 }
 
 .total {
-  margin: 12px 0 1px;
-  font-family: "Manrope", sans-serif;
-  font-size: 34px;
-  font-weight: 800;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
+margin: 12px 0 1px;
+
+font-family: "Manrope", sans-serif;
+font-size: 34px;
+font-weight: 800;
+
+line-height: 1.1;
+
+font-variant-numeric: tabular-nums;
 }
 
 .summary-footnote {
-  margin: 0;
-  color: #89938c;
-  font-size: 11px;
+margin: 0;
+
+color: #89938c;
+font-size: 11px;
 }
 
-.chart-section {
-  margin-top: 18px;
-  padding: 24px 24px 18px;
-  border: 1px solid #e5eae5;
-  background: var(--surface);
+/* =========================================================
+GRID PRINCIPAL
+========================================================= */
+
+.dashboard-grid {
+display: grid;
+
+grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+gap: 18px;
+
+margin-top: 18px;
 }
 
-.chart-heading {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 16px;
+/* =========================================================
+PAINÉIS
+========================================================= */
+
+.panel {
+min-width: 0;
+
+padding: 24px 24px 18px;
+
+border: 1px solid var(--line);
+
+background: var(--surface);
 }
 
-.chart-heading h2 {
-  margin-bottom: 4px;
-  font-family: "Manrope", sans-serif;
-  font-size: 16px;
-  font-weight: 700;
+.panel-heading {
+display: flex;
+
+align-items: flex-start;
+justify-content: space-between;
+
+gap: 16px;
 }
 
-.chart-heading p {
-  margin-bottom: 0;
-  color: var(--muted);
-  font-size: 12px;
+.panel-heading h2 {
+margin-bottom: 4px;
+
+font-family: "Manrope", sans-serif;
+font-size: 16px;
+font-weight: 700;
+}
+
+.panel-heading p {
+margin-bottom: 0;
+
+color: var(--muted);
+font-size: 12px;
 }
 
 .unit-label {
-  padding-top: 3px;
-  color: #8a948d;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
+flex-shrink: 0;
+
+padding-top: 3px;
+
+color: #8a948d;
+
+font-size: 9px;
+font-weight: 700;
+
+letter-spacing: 0.8px;
 }
 
+/* =========================================================
+MAPA
+========================================================= */
+
+.map-container {
+position: relative;
+
+height: 410px;
+
+margin-top: 19px;
+
+overflow: hidden;
+
+background: #eef3ee;
+}
+
+#map {
+width: 100%;
+height: 100%;
+}
+
+/*
+
+* O mapa do Leaflet possui controles próprios.
+* Ajustes para manter a aparência integrada ao dashboard.
+  */
+
+.leaflet-container {
+width: 100%;
+height: 100%;
+
+background: #eef3ee;
+
+font-family: "DM Sans", sans-serif;
+}
+
+.leaflet-control-zoom {
+border: 1px solid #d9e1da !important;
+
+box-shadow: 0 2px 8px rgba(29, 43, 37, 0.08) !important;
+}
+
+.leaflet-control-zoom a {
+color: var(--ink) !important;
+
+border-bottom-color: #e4e9e4 !important;
+}
+
+.leaflet-control-zoom a:hover {
+background: #f4f7f4 !important;
+}
+
+/* Estado de carregamento do mapa */
+
+#map-loading {
+position: absolute;
+
+inset: 0;
+
+z-index: 500;
+
+display: grid;
+
+place-items: center;
+
+background: rgba(244, 247, 242, 0.78);
+
+color: var(--muted);
+
+font-size: 13px;
+
+pointer-events: none;
+}
+
+/* =========================================================
+LEGENDA DO MAPA
+========================================================= */
+
+.map-legend {
+width: 100%;
+
+margin-top: 15px;
+}
+
+.legend-title {
+margin-bottom: 7px;
+
+color: #68756d;
+
+font-size: 10px;
+font-weight: 700;
+
+letter-spacing: 0.4px;
+text-transform: uppercase;
+}
+
+.legend-scale {
+display: flex;
+
+width: 100%;
+height: 9px;
+
+overflow: hidden;
+
+border-radius: 3px;
+}
+
+.legend-color {
+flex: 1;
+}
+
+.legend-low {
+background: #edf4ef;
+}
+
+.legend-medium-low {
+background: #c9e2d4;
+}
+
+.legend-medium {
+background: #8fc5ad;
+}
+
+.legend-medium-high {
+background: #4e9d83;
+}
+
+.legend-high {
+background: #236f5d;
+}
+
+.legend-labels {
+display: flex;
+
+justify-content: space-between;
+
+margin-top: 5px;
+
+color: #8a948d;
+
+font-size: 9px;
+}
+
+/* =========================================================
+GRÁFICO
+========================================================= */
+
 .chart-wrap {
-  position: relative;
-  height: 310px;
-  margin-top: 19px;
+position: relative;
+
+height: 410px;
+
+margin-top: 19px;
+}
+
+#cases-chart {
+width: 100% !important;
+height: 100% !important;
 }
 
 .status {
-  display: grid;
-  height: 100%;
-  margin: 0;
-  place-items: center;
-  color: var(--muted);
-  font-size: 13px;
+display: grid;
+
+height: 100%;
+
+margin: 0;
+
+place-items: center;
+
+color: var(--muted);
+
+font-size: 13px;
 }
 
 .status-error {
-  color: #9a4a3f;
+color: var(--danger);
+}
+
+/* =========================================================
+MUNICÍPIO SELECIONADO
+========================================================= */
+
+.selected-municipality {
+display: flex;
+
+align-items: center;
+justify-content: space-between;
+
+gap: 12px;
+
+margin-top: 17px;
+padding: 10px 12px;
+
+border: 1px solid #dce7df;
+border-left: 3px solid var(--green);
+
+background: #f4f8f5;
+}
+
+.selected-municipality-label {
+margin-bottom: 2px;
+
+color: #849088;
+
+font-size: 9px;
+font-weight: 700;
+
+letter-spacing: 0.7px;
+text-transform: uppercase;
+}
+
+.selected-municipality-name {
+color: var(--ink);
+
+font-family: "Manrope", sans-serif;
+font-size: 13px;
+font-weight: 700;
+}
+
+.clear-selection {
+flex-shrink: 0;
+
+padding: 5px 8px;
+
+border: 0;
+
+background: transparent;
+
+color: var(--green-dark);
+
+font: 600 10px "DM Sans", sans-serif;
+
+cursor: pointer;
+}
+
+.clear-selection:hover {
+text-decoration: underline;
+}
+
+.clear-selection:focus-visible {
+outline: 2px solid rgba(34, 131, 111, 0.35);
+outline-offset: 2px;
+}
+
+/* =========================================================
+RESUMO DO MUNICÍPIO
+========================================================= */
+
+.municipality-summary {
+margin-top: 18px;
+
+padding: 20px 24px;
+
+border: 1px solid var(--line);
+
+background: var(--surface);
+}
+
+.municipality-summary-header {
+display: flex;
+
+align-items: center;
+justify-content: space-between;
+
+gap: 24px;
+}
+
+.municipality-summary h2 {
+margin: 0;
+
+font-family: "Manrope", sans-serif;
+font-size: 22px;
+font-weight: 700;
+}
+
+.municipality-summary .eyebrow {
+margin-bottom: 6px;
+}
+
+.municipality-summary-value {
+display: grid;
+
+justify-items: end;
+
+gap: 4px;
+}
+
+.municipality-summary-value span {
+color: #89938c;
+
+font-size: 10px;
+font-weight: 600;
+}
+
+.municipality-summary-value strong {
+color: var(--green);
+
+font-family: "Manrope", sans-serif;
+font-size: 26px;
+font-weight: 800;
+
+font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+INTERAÇÃO DO MAPA
+========================================================= */
+
+/*
+
+* O JavaScript poderá adicionar/remover essas classes
+* nos municípios do mapa.
+  */
+
+.municipality-shape {
+transition:
+fill-opacity 0.15s ease,
+stroke-width 0.15s ease,
+opacity 0.15s ease;
+}
+
+.municipality-shape:hover {
+cursor: pointer;
+}
+
+.municipality-shape.selected {
+stroke: #153f35 !important;
+
+stroke-width: 3px !important;
+
+fill-opacity: 1 !important;
+}
+
+.municipality-shape.dimmed {
+opacity: 0.45;
+}
+
+/* =========================================================
+POPUP DO MAPA
+========================================================= */
+
+.leaflet-popup-content-wrapper {
+border-radius: 5px;
+
+box-shadow: 0 5px 18px rgba(29, 43, 37, 0.14);
+}
+
+.leaflet-popup-content {
+margin: 12px 14px;
+
+color: var(--ink);
+
+font-family: "DM Sans", sans-serif;
+font-size: 12px;
+}
+
+.map-popup-title {
+margin-bottom: 5px;
+
+font-family: "Manrope", sans-serif;
+font-size: 13px;
+font-weight: 700;
+}
+
+.map-popup-value {
+color: var(--muted);
+
+font-size: 11px;
+}
+
+/* =========================================================
+RODAPÉ
+========================================================= */
+
+.footer {
+display: flex;
+
+justify-content: space-between;
+
+gap: 16px;
+
+padding: 17px 0 28px;
+
+color: #818b83;
+
+font-size: 10px;
+}
+
+/* =========================================================
+TABLET / TELAS MÉDIAS
+========================================================= */
+
+@media (max-width: 900px) {
+
+.dashboard {
+width: min(100% - 36px, 1080px);
+}
+
+.dashboard-grid {
+grid-template-columns: 1fr;
+}
+
+.map-container,
+.chart-wrap {
+height: 380px;
+}
+}
+
+/* =========================================================
+CELULAR
+========================================================= */
+
+@media (max-width: 600px) {
+
+.dashboard {
+width: min(100% - 32px, 1080px);
+}
+
+.topbar {
+min-height: 64px;
+}
+
+.intro {
+align-items: stretch;
+
+```
+flex-direction: column;
+
+gap: 20px;
+
+padding: 34px 0 24px;
+```
+
+}
+
+.year-control {
+width: 100%;
+}
+
+.summary {
+padding: 18px 20px 16px;
+}
+
+.dashboard-grid {
+gap: 14px;
+
+```
+margin-top: 14px;
+```
+
+}
+
+.panel {
+padding: 20px 16px 14px;
+}
+
+.panel-heading {
+gap: 10px;
+}
+
+.unit-label {
+display: none;
+}
+
+.map-container {
+height: 330px;
+
+```
+margin-top: 16px;
+```
+
+}
+
+.chart-wrap {
+height: 300px;
+
+```
+margin-top: 16px;
+margin-right: -4px;
+```
+
+}
+
+.selected-municipality {
+align-items: flex-start;
+
+```
+flex-direction: column;
+```
+
+}
+
+.clear-selection {
+padding-left: 0;
+}
+
+.municipality-summary {
+padding: 18px 20px;
+}
+
+.municipality-summary-header {
+align-items: flex-start;
+
+```
+flex-direction: column;
+gap: 18px;
+```
+
+}
+
+.municipality-summary-value {
+justify-items: start;
 }
 
 .footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 17px 0 28px;
-  color: #818b83;
-  font-size: 10px;
+flex-direction: column;
+
+```
+gap: 5px;
+```
+
+}
 }
 
-@media (max-width: 600px) {
-  .dashboard {
-    width: min(100% - 32px, 1080px);
-  }
-
-  .topbar {
-    min-height: 64px;
-  }
-
-  .intro {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 20px;
-    padding: 34px 0 24px;
-  }
-
-  .year-control {
-    width: 100%;
-  }
-
-  .summary {
-    padding: 18px 20px 16px;
-  }
-
-  .chart-section {
-    padding: 20px 16px 14px;
-  }
-
-  .chart-wrap {
-    height: 260px;
-    margin-right: -4px;
-  }
-
-  .footer {
-    flex-direction: column;
-    gap: 5px;
-  }
-}
+/* =========================================================
+CELULARES MUITO PEQUENOS
+========================================================= */
 
 @media (max-width: 380px) {
-  .location {
-    font-size: 10px;
-  }
+
+.location {
+font-size: 10px;
+}
+
+.brand-name {
+font-size: 12px;
+}
+
+.brand-mark {
+width: 31px;
+height: 31px;
+}
+
+.map-container {
+height: 290px;
+}
+
+.chart-wrap {
+height: 270px;
+}
 }

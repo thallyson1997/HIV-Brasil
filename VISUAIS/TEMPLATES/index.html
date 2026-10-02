@@ -1,66 +1,452 @@
 <!doctype html>
+
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f4f7f2">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="theme-color"
+    content="#f4f7f2"
+  >
+
   <title>Casos de HIV | Minas Gerais</title>
-  <link rel="stylesheet" href="../CSS/style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="./app.js" defer></script>
+
+  <link
+    rel="stylesheet"
+    href="../CSS/style.css"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  >
+
+  <!-- PapaParse -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"
+    defer
+  ></script>
+
+  <!-- Chart.js -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+    defer
+  ></script>
+
+  <!-- Leaflet -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    defer
+  ></script>
+
+  <!-- Aplicação -->
+  <script
+    src="./app.js"
+    defer
+  ></script>
 </head>
+
 <body>
   <main class="dashboard">
-    <header class="topbar">
-      <a class="brand" href="#inicio" aria-label="Painel de HIV em Minas Gerais">
-        <span class="brand-mark" aria-hidden="true">MG</span>
-        <span class="brand-name">Vigilância <span>/</span> HIV</span>
-      </a>
-      <span class="location"><span class="location-dot" aria-hidden="true"></span> Minas Gerais, Brasil</span>
+
+```
+<!-- =========================
+     CABEÇALHO
+     ========================= -->
+
+<header class="topbar">
+
+  <a
+    class="brand"
+    href="#inicio"
+    aria-label="Painel de HIV em Minas Gerais"
+  >
+    <span class="brand-mark" aria-hidden="true">MG</span>
+
+    <span class="brand-name">
+      Vigilância <span>/</span> HIV
+    </span>
+  </a>
+
+  <span class="location">
+    <span
+      class="location-dot"
+      aria-hidden="true"
+    ></span>
+
+    Minas Gerais, Brasil
+  </span>
+
+</header>
+
+
+<!-- =========================
+     INTRODUÇÃO E FILTROS
+     ========================= -->
+
+<section
+  class="intro"
+  id="inicio"
+  aria-labelledby="page-title"
+>
+
+  <div class="intro-content">
+
+    <p class="eyebrow">
+      Painel de dados epidemiológicos
+    </p>
+
+    <h1 id="page-title">
+      Casos notificados de HIV
+    </h1>
+
+    <p class="subtitle">
+      Explore a distribuição dos casos de HIV nos municípios de Minas Gerais.
+    </p>
+
+  </div>
+
+
+  <div class="filters">
+
+    <label
+      class="year-control"
+      for="year-filter"
+    >
+      <span>Ano de notificação</span>
+
+      <select
+        id="year-filter"
+        name="ano"
+      >
+        <option value="">Carregando...</option>
+      </select>
+    </label>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     RESUMO
+     ========================= -->
+
+<section
+  class="summary"
+  aria-label="Resumo do ano selecionado"
+>
+
+  <div class="summary-label">
+
+    <span
+      class="summary-icon"
+      aria-hidden="true"
+    >+</span>
+
+    <span id="summary-label">
+      Total de notificações
+    </span>
+
+  </div>
+
+  <p
+    class="total"
+    id="total-cases"
+    aria-live="polite"
+  >
+    --
+  </p>
+
+  <p class="summary-footnote">
+    no ano de
+    <span id="summary-year">--</span>
+  </p>
+
+</section>
+
+
+<!-- =========================
+     PAINEL PRINCIPAL
+     MAPA + GRÁFICO
+     ========================= -->
+
+<section
+  class="dashboard-grid"
+  aria-label="Visualizações epidemiológicas"
+>
+
+
+  <!-- =========================
+       MAPA DE MINAS GERAIS
+       ========================= -->
+
+  <article
+    class="panel map-panel"
+    aria-labelledby="map-title"
+  >
+
+    <header class="panel-heading">
+
+      <div>
+
+        <h2 id="map-title">
+          Distribuição por município
+        </h2>
+
+        <p id="map-description">
+          Incidência de casos de HIV no ano selecionado
+        </p>
+
+      </div>
+
+      <span class="unit-label">
+        CASOS / MUNICÍPIO
+      </span>
+
     </header>
 
-    <section class="intro" id="inicio" aria-labelledby="page-title">
+
+    <div class="map-container">
+
+      <div
+        id="map"
+        role="img"
+        aria-label="Mapa interativo dos municípios de Minas Gerais"
+      ></div>
+
+      <div
+        id="map-loading"
+        class="status"
+      >
+        Carregando mapa...
+      </div>
+
+    </div>
+
+
+    <!-- Legenda de cores -->
+
+    <div
+      id="map-legend"
+      class="map-legend"
+      aria-label="Legenda da incidência"
+    >
+
+      <div class="legend-title">
+        Incidência
+      </div>
+
+      <div class="legend-scale">
+
+        <span
+          class="legend-color legend-low"
+          aria-hidden="true"
+        ></span>
+
+        <span
+          class="legend-color legend-medium-low"
+          aria-hidden="true"
+        ></span>
+
+        <span
+          class="legend-color legend-medium"
+          aria-hidden="true"
+        ></span>
+
+        <span
+          class="legend-color legend-medium-high"
+          aria-hidden="true"
+        ></span>
+
+        <span
+          class="legend-color legend-high"
+          aria-hidden="true"
+        ></span>
+
+      </div>
+
+      <div class="legend-labels">
+
+        <span>Baixa</span>
+
+        <span>Alta</span>
+
+      </div>
+
+    </div>
+
+  </article>
+
+
+  <!-- =========================
+       GRÁFICO MENSAL
+       ========================= -->
+
+  <article
+    class="panel chart-panel"
+    aria-labelledby="chart-title"
+  >
+
+    <header class="panel-heading">
+
       <div>
-        <p class="eyebrow">Painel de dados epidemiológicos</p>
-        <h1 id="page-title">Casos notificados de HIV</h1>
-        <p class="subtitle">Acompanhe as notificações ao longo do ano.</p>
-      </div>
-      <label class="year-control" for="year-filter">
-        <span>Ano de notificação</span>
-        <select id="year-filter" name="ano" disabled>
-          <option value="2026" selected>2026</option>
-        </select>
-      </label>
-    </section>
 
-    <section class="summary" aria-label="Resumo do ano selecionado">
-      <div class="summary-label"><span class="summary-icon" aria-hidden="true">+</span> Total de notificações</div>
-      <p class="total" id="total-cases" aria-live="polite">--</p>
-      <p class="summary-footnote">no ano de <span id="summary-year">2026</span></p>
-    </section>
+        <h2 id="chart-title">
+          Distribuição mensal
+        </h2>
 
-    <section class="chart-section" aria-labelledby="chart-title">
-      <div class="chart-heading">
-        <div>
-          <h2 id="chart-title">Distribuição mensal</h2>
-          <p>Notificações registradas em cada mês</p>
-        </div>
-        <span class="unit-label">CASOS / MÊS</span>
-      </div>
-      <div class="chart-wrap" id="chart-wrap">
-        <p class="status" id="status-message" role="status">Carregando dados...</p>
-        <canvas id="cases-chart" aria-label="Gráfico de notificações mensais de HIV" role="img" hidden></canvas>
-      </div>
-    </section>
+        <p id="chart-description">
+          Notificações registradas em cada mês
+        </p>
 
-    <footer class="footer">
-      <span>Fonte: base de dados local de notificações de HIV/AIDS.</span>
-      <span id="updated-label">Dados carregados do arquivo do projeto</span>
-    </footer>
+      </div>
+
+      <span class="unit-label">
+        CASOS / MÊS
+      </span>
+
+    </header>
+
+
+    <!-- Município selecionado -->
+
+    <div
+      id="selected-municipality"
+      class="selected-municipality"
+      hidden
+    >
+
+      <div class="selected-municipality-label">
+        Município selecionado
+      </div>
+
+      <div
+        id="selected-municipality-name"
+        class="selected-municipality-name"
+      >
+        --
+      </div>
+
+      <button
+        id="clear-municipality"
+        class="clear-selection"
+        type="button"
+      >
+        Mostrar todos os municípios
+      </button>
+
+    </div>
+
+
+    <div
+      class="chart-wrap"
+      id="chart-wrap"
+    >
+
+      <p
+        class="status"
+        id="status-message"
+        role="status"
+      >
+        Carregando dados...
+      </p>
+
+      <canvas
+        id="cases-chart"
+        aria-label="Gráfico de notificações mensais de HIV"
+        role="img"
+        hidden
+      ></canvas>
+
+    </div>
+
+  </article>
+
+</section>
+
+
+<!-- =========================
+     INFORMAÇÕES DO MUNICÍPIO
+     ========================= -->
+
+<section
+  id="municipality-summary"
+  class="municipality-summary"
+  aria-label="Resumo do município selecionado"
+  hidden
+>
+
+  <div class="municipality-summary-header">
+
+    <div>
+
+      <p class="eyebrow">
+        Município selecionado
+      </p>
+
+      <h2 id="municipality-summary-name">
+        --
+      </h2>
+
+    </div>
+
+    <div class="municipality-summary-value">
+
+      <span>
+        Notificações no ano
+      </span>
+
+      <strong id="municipality-total-cases">
+        --
+      </strong>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     RODAPÉ
+     ========================= -->
+
+<footer class="footer">
+
+  <span>
+    Fonte: base de dados local de notificações de HIV/AIDS.
+  </span>
+
+  <span id="updated-label">
+    Dados carregados do arquivo do projeto
+  </span>
+
+</footer>
+```
+
   </main>
+
 </body>
 </html>
