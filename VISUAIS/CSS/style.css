@@ -305,6 +305,165 @@ gap: 18px;
 margin-top: 18px;
 }
 
+.bottom-grid {
+display: grid;
+
+grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+gap: 18px;
+
+margin-top: 18px;
+}
+
+.ranking-context {
+min-height: 16px;
+
+margin: 16px 0 8px;
+
+color: var(--muted);
+font-size: 11px;
+}
+
+.ranking-list {
+display: grid;
+gap: 3px;
+
+margin: 0;
+padding: 0;
+
+list-style: none;
+}
+
+.ranking-item {
+display: grid;
+grid-template-columns: 34px minmax(0, 1fr) auto;
+align-items: center;
+gap: 10px;
+
+min-height: 34px;
+padding: 5px 9px;
+
+border-bottom: 1px solid #edf0ed;
+
+color: var(--ink);
+font-size: 12px;
+}
+
+.ranking-item-selected {
+border-bottom-color: transparent;
+background: var(--green-soft);
+color: var(--green-dark);
+font-weight: 700;
+}
+
+.ranking-position {
+color: #8a948d;
+font-size: 10px;
+font-variant-numeric: tabular-nums;
+}
+
+.ranking-name {
+min-width: 0;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+
+.ranking-total {
+font-variant-numeric: tabular-nums;
+font-weight: 700;
+}
+
+.social-profile-chart {
+display: grid;
+gap: 18px;
+margin-top: 22px;
+}
+
+.profile-dimension-heading {
+display: flex;
+align-items: baseline;
+justify-content: space-between;
+gap: 12px;
+margin-bottom: 8px;
+}
+
+.profile-dimension-heading h3 {
+margin: 0;
+font-family: "Manrope", sans-serif;
+font-size: 12px;
+font-weight: 700;
+}
+
+.profile-sample-size {
+color: #89938c;
+font-size: 10px;
+font-variant-numeric: tabular-nums;
+}
+
+.profile-stacked-bar {
+display: flex;
+width: 100%;
+height: 12px;
+overflow: hidden;
+border-radius: 3px;
+background: #edf0ed;
+}
+
+.profile-bar-segment {
+height: 100%;
+min-width: 1px;
+}
+
+.profile-legend {
+display: grid;
+grid-template-columns: repeat(2, minmax(0, 1fr));
+gap: 6px 14px;
+margin: 9px 0 0;
+padding: 0;
+list-style: none;
+}
+
+.profile-legend-item {
+display: grid;
+grid-template-columns: 8px minmax(0, 1fr) auto;
+align-items: center;
+gap: 6px;
+min-width: 0;
+color: #657168;
+font-size: 10px;
+}
+
+.profile-swatch {
+width: 8px;
+height: 8px;
+border-radius: 2px;
+}
+
+.profile-category {
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+
+.profile-value {
+color: var(--ink);
+font-variant-numeric: tabular-nums;
+white-space: nowrap;
+}
+
+.profile-privacy-note,
+.profile-suppression-note {
+margin: 14px 0 0;
+color: #89938c;
+font-size: 10px;
+line-height: 1.5;
+}
+
+.profile-suppression-note {
+margin-top: 4px;
+}
+
 /* =========================================================
 PAINÉIS
 ========================================================= */
@@ -758,6 +917,10 @@ width: min(100% - 36px, 1080px);
 grid-template-columns: 1fr;
 }
 
+.bottom-grid {
+grid-template-columns: 1fr;
+}
+
 .map-container,
 .chart-wrap {
 height: 380px;
@@ -808,6 +971,11 @@ margin-top: 14px;
 
 }
 
+.bottom-grid {
+gap: 14px;
+margin-top: 14px;
+}
+
 .panel {
 padding: 20px 16px 14px;
 }
@@ -837,6 +1005,15 @@ margin-top: 16px;
 margin-right: -4px;
 ```
 
+}
+
+.social-profile-chart {
+gap: 16px;
+margin-top: 18px;
+}
+
+.profile-legend {
+grid-template-columns: 1fr;
 }
 
 .selected-municipality {

@@ -70,7 +70,7 @@
 <body>
   <main class="dashboard">
 
-```
+
 <!-- =========================
      CABEÇALHO
      ========================= -->
@@ -180,7 +180,7 @@
   </p>
 
   <p class="summary-footnote">
-    no ano de
+    <span id="summary-scope">no ano de</span>
     <span id="summary-year">--</span>
   </p>
 
@@ -216,7 +216,7 @@
         </h2>
 
         <p id="map-description">
-          Incidência de casos de HIV no ano selecionado
+          Notificações por município no ano selecionado
         </p>
 
       </div>
@@ -251,11 +251,11 @@
     <div
       id="map-legend"
       class="map-legend"
-      aria-label="Legenda da incidência"
+      aria-label="Legenda das notificações"
     >
 
       <div class="legend-title">
-        Incidência
+        Casos notificados
       </div>
 
       <div class="legend-scale">
@@ -387,44 +387,67 @@
 </section>
 
 
-<!-- =========================
-     INFORMAÇÕES DO MUNICÍPIO
-     ========================= -->
-
 <section
-  id="municipality-summary"
-  class="municipality-summary"
-  aria-label="Resumo do município selecionado"
-  hidden
+  class="bottom-grid"
+  aria-label="Ranking municipal e visualização adicional"
 >
 
-  <div class="municipality-summary-header">
+  <article
+    class="panel ranking-panel"
+    aria-labelledby="ranking-title"
+  >
 
-    <div>
+    <header class="panel-heading">
+      <div>
+        <h2 id="ranking-title">Municípios com mais notificações</h2>
+        <p>Ranking anual com critérios de desempate</p>
+      </div>
+      <span class="unit-label">CASOS / ANO</span>
+    </header>
 
-      <p class="eyebrow">
-        Município selecionado
-      </p>
+    <p
+      id="ranking-context"
+      class="ranking-context"
+      aria-live="polite"
+    >
+      Top 10 do ano selecionado
+    </p>
 
-      <h2 id="municipality-summary-name">
-        --
-      </h2>
+    <ol
+      id="municipality-ranking"
+      class="ranking-list"
+      aria-label="Ranking de municípios por notificações"
+    ></ol>
 
+  </article>
+
+  <article
+    class="panel fourth-chart-panel"
+    aria-labelledby="fourth-chart-title"
+  >
+
+    <header class="panel-heading">
+      <div>
+        <h2 id="fourth-chart-title">Perfil social dos notificados</h2>
+        <p>Distribuição estadual por sexo, idade e raça/cor</p>
+      </div>
+    </header>
+
+    <div
+      id="social-profile-chart"
+      class="social-profile-chart"
+      aria-live="polite"
+    ></div>
+
+    <p class="profile-privacy-note">
+      Perfil estadual do ano selecionado, independente do município no mapa. Categorias com menos de 10 registros são agrupadas ou omitidas.
+    </p>
+
+    <div class="profile-suppression-note" aria-hidden="true">
+      Percentuais calculados entre as categorias exibidas.
     </div>
 
-    <div class="municipality-summary-value">
-
-      <span>
-        Notificações no ano
-      </span>
-
-      <strong id="municipality-total-cases">
-        --
-      </strong>
-
-    </div>
-
-  </div>
+  </article>
 
 </section>
 
@@ -444,7 +467,6 @@
   </span>
 
 </footer>
-```
 
   </main>
 

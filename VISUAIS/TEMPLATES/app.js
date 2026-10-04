@@ -22,6 +22,7 @@ const incidenceMultiplier = 100000;
 const yearFilter = document.querySelector("#year-filter");
 
 const totalCases = document.querySelector("#total-cases");
+const summaryScope = document.querySelector("#summary-scope");
 const summaryYear = document.querySelector("#summary-year");
 
 const chartCanvas = document.querySelector("#cases-chart");
@@ -42,22 +43,18 @@ const clearMunicipalityButton = document.querySelector(
   "#clear-municipality"
 );
 
-const municipalitySummary = document.querySelector(
-  "#municipality-summary"
-);
-
-const municipalitySummaryName = document.querySelector(
-  "#municipality-summary-name"
-);
-
-const municipalityTotalCases = document.querySelector(
-  "#municipality-total-cases"
-);
-
 const chartDescription = document.querySelector(
   "#chart-description"
 );
-
+const municipalityRanking = document.querySelector(
+  "#municipality-ranking"
+);
+const rankingContext = document.querySelector(
+  "#ranking-context"
+);
+const socialProfileChart = document.querySelector(
+  "#social-profile-chart"
+);
 /* =========================================================
    ESTADO DA APLICAÇÃO
 ========================================================= */
@@ -66,16 +63,18 @@ let rows = [];
 let monthlyCases = {};
 let municipalityCases = {};
 let municipalityPopulation = {};
+let latestDateByYear = {};
+let socialProfileByYear = {};
 let years = [];
 
 let casesChart = null;
-
 let map = null;
 let municipalityLayer = null;
 
 let selectedMunicipalityCode = null;
 
 let geoJsonData = null;
+let municipalityNameByCode = {};
 
 let hasPopulationData = false;
 
@@ -167,6 +166,7 @@ function getMunicipalityCode(row) {
 
 function getMunicipalityName(row) {
   const possibleColumns = [
+    "id_mn_resi",
     "municipio",
     "nome_municipio",
     "no_municipio",
@@ -319,120 +319,112 @@ function showError(message) {
 
 function processData(data) {
   rows = [];
-
   monthlyCases = {};
-
   municipalityCases = {};
-
   municipalityPopulation = {};
-
+  latestDateByYear = {};
+  socialProfileByYear = {};
   hasPopulationData = false;
 
   for (const row of data) {
     const date =
-      String(
-        row.dt_notific ?? ""
-      ).trim();
+      String(row.dt_notific ?? "").trim();
 
-    /*
-     * Aceita somente:
-     * YYYY-MM-DD
-     */
-
-    if (
-      !/^\d{4}-\d{2}-\d{2}$/.test(
-        date
-      )
-    ) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       continue;
     }
 
-    const year =
-      date.slice(0, 4);
+    const year = date.slice(0, 4);
+    const month = Number(date.slice(5, 7)) - 1;
 
-    const month =
-      Number(
-        date.slice(5, 7)
-      ) - 1;
-
-    if (
-      month < 0 ||
-      month > 11
-    ) {
+    if (month < 0 || month > 11) {
       continue;
+    }
+
+    if (!latestDateByYear[year] || date > latestDateByYear[year]) {
+      latestDateByYear[year] = date;
+    }
+
+    socialProfileByYear[year] ??= {
+      sex: {},
+      age: {},
+      race: {}
+    };
+
+    const sex = String(row.cs_sexo ?? "").trim();
+    if (sex && sex !== "Ignorado") {
+      socialProfileByYear[year].sex[sex] ??= 0;
+      socialProfileByYear[year].sex[sex] += 1;
+    }
+
+    const age = normalizeNumber(row.nu_idade_n);
+    if (age !== null && age >= 0) {
+      const ageGroup = age < 20
+        ? "Menos de 20"
+        : age < 30
+          ? "20 a 29"
+          : age < 40
+            ? "30 a 39"
+            : age < 50
+              ? "40 a 49"
+              : age < 60
+                ? "50 a 59"
+                : "60 ou mais";
+
+      socialProfileByYear[year].age[ageGroup] ??= 0;
+      socialProfileByYear[year].age[ageGroup] += 1;
+    }
+
+    const race = String(row.cs_raca ?? "").trim();
+    if (race && race !== "Ignorado") {
+      socialProfileByYear[year].race[race] ??= 0;
+      socialProfileByYear[year].race[race] += 1;
     }
 
     const municipalityCode =
       getMunicipalityCode(row);
-
     const municipalityName =
       getMunicipalityName(row);
-
-    const population =
-      getPopulation(row);
-
-    /*
-     * Guarda o registro normalizado.
-     */
+    const municipalityKey =
+      municipalityCode || normalizeText(municipalityName);
+    const population = getPopulation(row);
 
     rows.push({
       date,
       year,
       month,
       municipalityCode,
+      municipalityKey,
       municipalityName,
       population
     });
 
-    /*
-     * Total geral por ano/mês.
-     */
-
-    monthlyCases[year] ??=
-      Array(12).fill(0);
-
+    monthlyCases[year] ??= Array(12).fill(0);
     monthlyCases[year][month] += 1;
 
-    /*
-     * Total por município.
-     */
-
-    if (municipalityCode) {
+    if (municipalityName !== "Município não identificado") {
       municipalityCases[year] ??= {};
-
-      municipalityCases[year][municipalityCode] ??= {
+      municipalityCases[year][municipalityKey] ??= {
         name: municipalityName,
         months: Array(12).fill(0),
+        days: {},
         total: 0
       };
-
-      municipalityCases[year][municipalityCode]
-        .months[month] += 1;
-
-      municipalityCases[year][municipalityCode]
-        .total += 1;
-
-      /*
-       * População, caso exista no CSV.
-       */
+      municipalityCases[year][municipalityKey].months[month] += 1;
+      municipalityCases[year][municipalityKey].days[date] ??= 0;
+      municipalityCases[year][municipalityKey].days[date] += 1;
+      municipalityCases[year][municipalityKey].total += 1;
 
       if (population !== null) {
         municipalityPopulation[year] ??= {};
-
-        municipalityPopulation[year][municipalityCode] =
-          population;
-
+        municipalityPopulation[year][municipalityKey] = population;
         hasPopulationData = true;
       }
     }
   }
 
-  years =
-    Object.keys(monthlyCases)
-      .sort(
-        (a, b) =>
-          Number(b) - Number(a)
-      );
+  years = Object.keys(monthlyCases)
+    .sort((a, b) => Number(b) - Number(a));
 }
 
 /* =========================================================
@@ -462,14 +454,17 @@ function getMunicipalityData(
   year,
   code
 ) {
+  const municipalityKey =
+    municipalityNameByCode[code] || code;
+
   if (
     !municipalityCases[year] ||
-    !municipalityCases[year][code]
+    !municipalityCases[year][municipalityKey]
   ) {
     return null;
   }
 
-  return municipalityCases[year][code];
+  return municipalityCases[year][municipalityKey];
 }
 
 /* =========================================================
@@ -477,14 +472,204 @@ function getMunicipalityData(
 ========================================================= */
 
 function updateSummary(year) {
-  const total =
-    getYearTotal(year);
+  const municipalityData = selectedMunicipalityCode
+    ? getMunicipalityData(year, selectedMunicipalityCode)
+    : null;
+
+  const total = municipalityData
+    ? municipalityData.total
+    : selectedMunicipalityCode
+      ? 0
+      : getYearTotal(year);
 
   totalCases.textContent =
     formatNumber(total);
 
+  summaryScope.textContent = selectedMunicipalityCode
+    ? `em ${municipalityData?.name || selectedMunicipalityName.textContent} no ano de`
+    : "no ano de";
+
   summaryYear.textContent =
     year;
+
+  updateMunicipalityRanking(year);
+}
+
+function updateSocialProfile(year) {
+  const profile = socialProfileByYear[year];
+  socialProfileChart.replaceChildren();
+
+  if (!profile) {
+    socialProfileChart.textContent =
+      "Não há informações de perfil disponíveis para este ano.";
+    return;
+  }
+
+  const dimensions = [
+    { key: "sex", label: "Sexo registrado" },
+    { key: "age", label: "Faixa etária" },
+    { key: "race", label: "Raça/cor" }
+  ];
+  const minimumVisibleCount = 10;
+  const colors = [
+    "#22836f",
+    "#d09348",
+    "#447c9b",
+    "#bd675d",
+    "#7a8f4f",
+    "#886aa8",
+    "#738078"
+  ];
+
+  for (const [dimensionIndex, dimension] of dimensions.entries()) {
+    const entries = Object.entries(profile[dimension.key]);
+    const visible = entries.filter(([, count]) => count >= minimumVisibleCount);
+    const suppressedTotal = entries
+      .filter(([, count]) => count < minimumVisibleCount)
+      .reduce((sum, [, count]) => sum + count, 0);
+
+    if (suppressedTotal >= minimumVisibleCount) {
+      visible.push(["Outras categorias", suppressedTotal]);
+    }
+
+    visible.sort((first, second) => second[1] - first[1]);
+    const total = visible.reduce((sum, [, count]) => sum + count, 0);
+    const section = document.createElement("section");
+    const heading = document.createElement("div");
+    const title = document.createElement("h3");
+    const sampleSize = document.createElement("span");
+    const bar = document.createElement("div");
+    const legend = document.createElement("ul");
+
+    section.className = "profile-dimension";
+    heading.className = "profile-dimension-heading";
+    title.textContent = dimension.label;
+    sampleSize.className = "profile-sample-size";
+    sampleSize.textContent = `n = ${formatNumber(total)}`;
+    heading.append(title, sampleSize);
+
+    bar.className = "profile-stacked-bar";
+    bar.setAttribute("role", "img");
+    bar.setAttribute(
+      "aria-label",
+      `${dimension.label}: ${visible.map(([label, count]) => `${label}, ${formatNumber(count)}`).join("; ")}`
+    );
+
+    legend.className = "profile-legend";
+
+    visible.forEach(([label, count], index) => {
+      const percentage = total ? count / total * 100 : 0;
+      const segment = document.createElement("span");
+      const item = document.createElement("li");
+      const swatch = document.createElement("span");
+      const category = document.createElement("span");
+      const value = document.createElement("span");
+
+      segment.className = "profile-bar-segment";
+      segment.style.width = `${percentage}%`;
+      segment.style.backgroundColor = colors[(dimensionIndex * 2 + index) % colors.length];
+      segment.title = `${label}: ${formatNumber(count)} (${percentage.toFixed(1)}%)`;
+      segment.setAttribute("aria-hidden", "true");
+      bar.append(segment);
+
+      item.className = "profile-legend-item";
+      swatch.className = "profile-swatch";
+      swatch.style.backgroundColor = colors[(dimensionIndex * 2 + index) % colors.length];
+      swatch.setAttribute("aria-hidden", "true");
+      category.className = "profile-category";
+      category.textContent = label;
+      value.className = "profile-value";
+      value.textContent = `${formatNumber(count)} · ${percentage.toFixed(1)}%`;
+      item.append(swatch, category, value);
+      legend.append(item);
+    });
+
+    section.append(heading, bar, legend);
+    socialProfileChart.append(section);
+  }
+}
+
+function updateMunicipalityRanking(year) {
+  const monthlyTotals = monthlyCases[year] || [];
+  let latestMonth = -1;
+
+  for (let month = monthlyTotals.length - 1; month >= 0; month -= 1) {
+    if (monthlyTotals[month] > 0) {
+      latestMonth = month;
+      break;
+    }
+  }
+
+  const latestDate = latestDateByYear[year];
+  const ranking = Object.entries(municipalityCases[year] || {})
+    .map(([key, municipality]) => ({
+      key,
+      ...municipality,
+      latestMonthTotal: municipality.months[latestMonth] || 0,
+      latestDayTotal: municipality.days[latestDate] || 0
+    }))
+    .sort((first, second) =>
+      second.total - first.total ||
+      second.latestMonthTotal - first.latestMonthTotal ||
+      second.latestDayTotal - first.latestDayTotal ||
+      first.name.localeCompare(second.name, "pt-BR", { sensitivity: "base" }) ||
+      first.key.localeCompare(second.key)
+    );
+
+  let visibleRanking = ranking.slice(0, 10);
+  let selectedIndex = -1;
+
+  if (selectedMunicipalityCode) {
+    const selectedKey =
+      municipalityNameByCode[selectedMunicipalityCode] ||
+      selectedMunicipalityCode;
+
+    selectedIndex = ranking.findIndex(
+      (municipality) => municipality.key === selectedKey
+    );
+
+    if (selectedIndex >= 0) {
+      visibleRanking = ranking.slice(
+        Math.max(0, selectedIndex - 4),
+        Math.min(ranking.length, selectedIndex + 6)
+      );
+
+      rankingContext.textContent =
+        `Posição ${selectedIndex + 1} de ${ranking.length}. Exibindo até 4 municípios acima e 5 abaixo.`;
+    } else {
+      rankingContext.textContent =
+        "Município sem notificações registradas neste ano. Exibindo o Top 10.";
+    }
+  } else {
+    rankingContext.textContent =
+      "Top 10 do ano selecionado. Desempate pelo último mês, último dia e ordem alfabética.";
+  }
+
+  municipalityRanking.replaceChildren();
+
+  for (const municipality of visibleRanking) {
+    const rank = ranking.indexOf(municipality) + 1;
+    const item = document.createElement("li");
+    const position = document.createElement("span");
+    const name = document.createElement("span");
+    const total = document.createElement("span");
+
+    item.className = "ranking-item";
+    if (rank === selectedIndex + 1 && selectedIndex >= 0) {
+      item.classList.add("ranking-item-selected");
+      item.setAttribute("aria-current", "true");
+    }
+
+    position.className = "ranking-position";
+    position.textContent = `${rank}.`;
+    name.className = "ranking-name";
+    name.textContent = municipality.name;
+    total.className = "ranking-total";
+    total.textContent = formatNumber(municipality.total);
+
+    item.append(position, name, total);
+    municipalityRanking.append(item);
+  }
 }
 
 /* =========================================================
@@ -697,6 +882,10 @@ function getMapValue(
       municipalityCode
     );
 
+  const municipalityKey =
+    municipalityNameByCode[municipalityCode] ||
+    municipalityCode;
+
   if (!data) {
     return 0;
   }
@@ -711,10 +900,10 @@ function getMapValue(
   if (
     hasPopulationData &&
     municipalityPopulation[year] &&
-    municipalityPopulation[year][municipalityCode]
+    municipalityPopulation[year][municipalityKey]
   ) {
     const population =
-      municipalityPopulation[year][municipalityCode];
+      municipalityPopulation[year][municipalityKey];
 
     return (
       data.total /
@@ -896,7 +1085,10 @@ function createPopupContent(
 
   const hasMunicipalityPopulation =
     municipalityPopulation[year] &&
-    municipalityPopulation[year][municipalityCode];
+    municipalityPopulation[year][
+      municipalityNameByCode[municipalityCode] ||
+      municipalityCode
+    ];
 
   let valueLabel;
 
@@ -994,6 +1186,21 @@ async function loadGeoJson() {
 
     geoJsonData =
       await response.json();
+
+    municipalityNameByCode = {};
+
+    for (const feature of geoJsonData.features) {
+      const code =
+        getGeoJsonMunicipalityCode(feature);
+
+      const name =
+        getGeoJsonMunicipalityName(feature);
+
+      if (code && name) {
+        municipalityNameByCode[code] =
+          normalizeText(name);
+      }
+    }
 
     renderMunicipalityLayer();
 
@@ -1177,29 +1384,10 @@ function selectMunicipality(
   selectedMunicipality.hidden =
     false;
 
-  municipalitySummaryName.textContent =
-    name;
-
-  municipalitySummary.hidden =
-    false;
-
-  /*
-   * Atualiza total.
-   */
-
   const year =
     yearFilter.value;
 
-  const data =
-    getMunicipalityData(
-      year,
-      code
-    );
-
-  municipalityTotalCases.textContent =
-    formatNumber(
-      data?.total || 0
-    );
+  updateSummary(year);
 
   /*
    * Atualiza gráfico.
@@ -1238,8 +1426,7 @@ function clearMunicipalitySelection() {
   selectedMunicipality.hidden =
     true;
 
-  municipalitySummary.hidden =
-    true;
+  updateSummary(yearFilter.value);
 
   chartDescription.textContent =
     "Notificações registradas em cada mês";
@@ -1271,6 +1458,7 @@ function changeYear(year) {
   }
 
   updateSummary(year);
+  updateSocialProfile(year);
 
   /*
    * Redesenha o mapa para atualizar
@@ -1287,22 +1475,6 @@ function changeYear(year) {
 
   updateChart(year);
 
-  /*
-   * Atualiza o total municipal.
-   */
-
-  if (selectedMunicipalityCode) {
-    const data =
-      getMunicipalityData(
-        year,
-        selectedMunicipalityCode
-      );
-
-    municipalityTotalCases.textContent =
-      formatNumber(
-        data?.total || 0
-      );
-  }
 }
 
 /* =========================================================
@@ -1399,6 +1571,10 @@ Papa.parse(
        */
 
       updateSummary(
+        yearFilter.value
+      );
+
+      updateSocialProfile(
         yearFilter.value
       );
 
