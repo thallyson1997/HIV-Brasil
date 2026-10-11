@@ -1,4 +1,4 @@
-const csvPath = "../../DADOS/dados_aids_hiv.csv";
+const aggregatedDataPath = "../DADOS_PUBLICOS/casos_agregados.json";
 
 const geoJsonPath =
   "https://cdn.jsdelivr.net/gh/henriquemalvar/br-geojson@main/dist/municipios/MG.geojson";
@@ -13,7 +13,6 @@ const monthNames = [
   "Set", "Out", "Nov", "Dez"
 ];
 
-const incidenceMultiplier = 100000;
 
 /* =========================================================
    ELEMENTOS DA PÁGINA
@@ -59,11 +58,8 @@ const socialProfileChart = document.querySelector(
    ESTADO DA APLICAÇÃO
 ========================================================= */
 
-let rows = [];
 let monthlyCases = {};
 let municipalityCases = {};
-let municipalityPopulation = {};
-let latestDateByYear = {};
 let socialProfileByYear = {};
 let years = [];
 
@@ -76,7 +72,6 @@ let selectedMunicipalityCode = null;
 let geoJsonData = null;
 let municipalityNameByCode = {};
 
-let hasPopulationData = false;
 
 /* =========================================================
    UTILITÁRIOS
@@ -318,113 +313,29 @@ function showError(message) {
 ========================================================= */
 
 function processData(data) {
-  rows = [];
   monthlyCases = {};
   municipalityCases = {};
-  municipalityPopulation = {};
-  latestDateByYear = {};
   socialProfileByYear = {};
-  hasPopulationData = false;
+  const publicYears = data?.years;
 
-  for (const row of data) {
-    const date =
-      String(row.dt_notific ?? "").trim();
-
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      continue;
-    }
-
-    const year = date.slice(0, 4);
-    const month = Number(date.slice(5, 7)) - 1;
-
-    if (month < 0 || month > 11) {
-      continue;
-    }
-
-    if (!latestDateByYear[year] || date > latestDateByYear[year]) {
-      latestDateByYear[year] = date;
-    }
-
-    socialProfileByYear[year] ??= {
-      sex: {},
-      age: {},
-      race: {}
-    };
-
-    const sex = String(row.cs_sexo ?? "").trim();
-    if (sex && sex !== "Ignorado") {
-      socialProfileByYear[year].sex[sex] ??= 0;
-      socialProfileByYear[year].sex[sex] += 1;
-    }
-
-    const age = normalizeNumber(row.nu_idade_n);
-    if (age !== null && age >= 0) {
-      const ageGroup = age < 20
-        ? "Menos de 20"
-        : age < 30
-          ? "20 a 29"
-          : age < 40
-            ? "30 a 39"
-            : age < 50
-              ? "40 a 49"
-              : age < 60
-                ? "50 a 59"
-                : "60 ou mais";
-
-      socialProfileByYear[year].age[ageGroup] ??= 0;
-      socialProfileByYear[year].age[ageGroup] += 1;
-    }
-
-    const race = String(row.cs_raca ?? "").trim();
-    if (race && race !== "Ignorado") {
-      socialProfileByYear[year].race[race] ??= 0;
-      socialProfileByYear[year].race[race] += 1;
-    }
-
-    const municipalityCode =
-      getMunicipalityCode(row);
-    const municipalityName =
-      getMunicipalityName(row);
-    const municipalityKey =
-      municipalityCode || normalizeText(municipalityName);
-    const population = getPopulation(row);
-
-    rows.push({
-      date,
-      year,
-      month,
-      municipalityCode,
-      municipalityKey,
-      municipalityName,
-      population
-    });
-
-    monthlyCases[year] ??= Array(12).fill(0);
-    monthlyCases[year][month] += 1;
-
-    if (municipalityName !== "Município não identificado") {
-      municipalityCases[year] ??= {};
-      municipalityCases[year][municipalityKey] ??= {
-        name: municipalityName,
-        months: Array(12).fill(0),
-        days: {},
-        total: 0
-      };
-      municipalityCases[year][municipalityKey].months[month] += 1;
-      municipalityCases[year][municipalityKey].days[date] ??= 0;
-      municipalityCases[year][municipalityKey].days[date] += 1;
-      municipalityCases[year][municipalityKey].total += 1;
-
-      if (population !== null) {
-        municipalityPopulation[year] ??= {};
-        municipalityPopulation[year][municipalityKey] = population;
-        hasPopulationData = true;
-      }
-    }
+  if (data?.schemaVersion !== 1 || !publicYears) {
+    throw new Error("Formato dos dados agregados não reconhecido.");
   }
 
-  years = Object.keys(monthlyCases)
-    .sort((a, b) => Number(b) - Number(a));
+  years = Object.keys(publicYears)
+    .sort((first, second) => Number(second) - Number(first));
+
+  for (const year of years) {
+    const yearData = publicYears[year];
+    monthlyCases[year] = yearData.monthlyTotals;
+    municipalityCases[year] = Object.fromEntries(
+      yearData.municipalities.map((municipality) => [
+        municipality.key,
+        municipality
+      ])
+    );
+    socialProfileByYear[year] = yearData.socialProfile;
+  }
 }
 
 /* =========================================================
@@ -476,17 +387,15 @@ function updateSummary(year) {
     ? getMunicipalityData(year, selectedMunicipalityCode)
     : null;
 
-  const total = municipalityData
-    ? municipalityData.total
-    : selectedMunicipalityCode
-      ? 0
-      : getYearTotal(year);
-
   totalCases.textContent =
-    formatNumber(total);
+    selectedMunicipalityCode && !municipalityData
+      ? "—"
+      : formatNumber(municipalityData?.total ?? getYearTotal(year));
 
   summaryScope.textContent = selectedMunicipalityCode
-    ? `em ${municipalityData?.name || selectedMunicipalityName.textContent} no ano de`
+    ? municipalityData
+      ? `em ${municipalityData.name} no ano de`
+      : `dados não exibidos no ano de`
     : "no ano de";
 
   summaryYear.textContent =
@@ -590,28 +499,15 @@ function updateSocialProfile(year) {
 }
 
 function updateMunicipalityRanking(year) {
-  const monthlyTotals = monthlyCases[year] || [];
-  let latestMonth = -1;
-
-  for (let month = monthlyTotals.length - 1; month >= 0; month -= 1) {
-    if (monthlyTotals[month] > 0) {
-      latestMonth = month;
-      break;
-    }
-  }
-
-  const latestDate = latestDateByYear[year];
   const ranking = Object.entries(municipalityCases[year] || {})
     .map(([key, municipality]) => ({
       key,
-      ...municipality,
-      latestMonthTotal: municipality.months[latestMonth] || 0,
-      latestDayTotal: municipality.days[latestDate] || 0
+      ...municipality
     }))
     .sort((first, second) =>
       second.total - first.total ||
-      second.latestMonthTotal - first.latestMonthTotal ||
-      second.latestDayTotal - first.latestDayTotal ||
+      (second.latestMonthCases ?? 0) - (first.latestMonthCases ?? 0) ||
+      (second.latestDayCases ?? 0) - (first.latestDayCases ?? 0) ||
       first.name.localeCompare(second.name, "pt-BR", { sensitivity: "base" }) ||
       first.key.localeCompare(second.key)
     );
@@ -638,11 +534,11 @@ function updateMunicipalityRanking(year) {
         `Posição ${selectedIndex + 1} de ${ranking.length}. Exibindo até 4 municípios acima e 5 abaixo.`;
     } else {
       rankingContext.textContent =
-        "Município sem notificações registradas neste ano. Exibindo o Top 10.";
+        "Município fora do ranking público. Contagens abaixo de 10 não são exibidas.";
     }
   } else {
     rankingContext.textContent =
-      "Top 10 do ano selecionado. Desempate pelo último mês, último dia e ordem alfabética.";
+      "Top 10 do ano. Desempate pelo último mês e dia divulgados; valores suprimidos seguem ordem alfabética.";
   }
 
   municipalityRanking.replaceChildren();
@@ -694,7 +590,7 @@ function renderChart(
         municipalityData.months;
     } else {
       values =
-        Array(12).fill(0);
+        Array(12).fill(null);
     }
   } else {
     values =
@@ -853,10 +749,10 @@ function updateChart(year) {
 
     if (municipalityData) {
       chartDescription.textContent =
-        `Notificações mensais em ${municipalityData.name}`;
+        `Notificações mensais em ${municipalityData.name}; contagens abaixo de 10 omitidas`;
     } else {
       chartDescription.textContent =
-        "Nenhuma notificação registrada para este município neste ano";
+        "Dados municipais não exibidos para proteger a privacidade";
     }
 
     return;
@@ -882,40 +778,9 @@ function getMapValue(
       municipalityCode
     );
 
-  const municipalityKey =
-    municipalityNameByCode[municipalityCode] ||
-    municipalityCode;
-
   if (!data) {
     return 0;
   }
-
-  /*
-   * Se houver população:
-   *
-   * incidência =
-   * casos / população × 100.000
-   */
-
-  if (
-    hasPopulationData &&
-    municipalityPopulation[year] &&
-    municipalityPopulation[year][municipalityKey]
-  ) {
-    const population =
-      municipalityPopulation[year][municipalityKey];
-
-    return (
-      data.total /
-      population *
-      incidenceMultiplier
-    );
-  }
-
-  /*
-   * Sem população:
-   * utiliza número absoluto.
-   */
 
   return data.total;
 }
@@ -1062,7 +927,8 @@ function municipalityStyle(feature) {
 
 function createPopupContent(
   year,
-  municipalityCode
+  municipalityCode,
+  featureName
 ) {
   const data =
     getMunicipalityData(
@@ -1072,36 +938,14 @@ function createPopupContent(
 
   const name =
     data?.name ||
+    featureName ||
     "Município";
 
-  const total =
-    data?.total || 0;
-
-  const value =
-    getMapValue(
-      year,
-      municipalityCode
-    );
-
-  const hasMunicipalityPopulation =
-    municipalityPopulation[year] &&
-    municipalityPopulation[year][
-      municipalityNameByCode[municipalityCode] ||
-      municipalityCode
-    ];
-
-  let valueLabel;
-
-  if (hasMunicipalityPopulation) {
-    valueLabel =
-      `${formatIncidence(
-        value
-      )} casos por 100 mil habitantes`;
-  } else {
-    valueLabel =
-      `${formatNumber(
-        value
-      )} notificações`;
+  if (!data) {
+    return `
+      <div class="map-popup-title">${name}</div>
+      <div class="map-popup-value">Contagem não exibida para proteger a privacidade.</div>
+    `;
   }
 
   return `
@@ -1110,13 +954,7 @@ function createPopupContent(
     </div>
 
     <div class="map-popup-value">
-      ${formatNumber(
-        total
-      )} notificações em ${year}
-    </div>
-
-    <div class="map-popup-value">
-      ${valueLabel}
+      ${formatNumber(data.total)} notificações em ${year}
     </div>
   `;
 }
@@ -1267,7 +1105,8 @@ function renderMunicipalityLayer() {
             layer.bindPopup(
               createPopupContent(
                 year,
-                code
+                code,
+                municipalityName
               )
             );
 
@@ -1500,99 +1339,38 @@ clearMunicipalityButton.addEventListener(
 );
 
 /* =========================================================
-   CARREGAMENTO DO CSV
+   CARREGAMENTO DOS DADOS AGREGADOS
 ========================================================= */
 
-Papa.parse(
-  csvPath,
-  {
-    download: true,
+async function loadPublicData() {
+  try {
+    const response = await fetch(aggregatedDataPath);
 
-    header: true,
-
-    delimiter: ";",
-
-    skipEmptyLines: true,
-
-    complete: ({
-      data,
-      errors
-    }) => {
-      if (
-        errors.length &&
-        !data.length
-      ) {
-        showError(
-          "Não foi possível ler os dados. Abra esta página por um servidor HTTP."
-        );
-
-        return;
-      }
-
-      processData(data);
-
-      if (!years.length) {
-        showError(
-          "Nenhuma notificação com data válida foi encontrada."
-        );
-
-        return;
-      }
-
-      /*
-       * Preenche o seletor de anos.
-       */
-
-      yearFilter.replaceChildren(
-        ...years.map(
-          (year) =>
-            new Option(
-              year,
-              year
-            )
-        )
-      );
-
-      /*
-       * Seleciona 2026 quando disponível.
-       * Caso contrário, usa o ano mais recente.
-       */
-
-      yearFilter.value =
-        monthlyCases["2026"]
-          ? "2026"
-          : years[0];
-
-      yearFilter.disabled =
-        false;
-
-      /*
-       * Renderiza resumo e gráfico.
-       */
-
-      updateSummary(
-        yearFilter.value
-      );
-
-      updateSocialProfile(
-        yearFilter.value
-      );
-
-      renderChart(
-        yearFilter.value
-      );
-
-      /*
-       * Inicializa o mapa.
-       */
-
-      initializeMap();
-    },
-
-    error: () => {
-      showError(
-        "Não foi possível carregar os dados. Abra esta página por um servidor HTTP."
-      );
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
+
+    processData(await response.json());
+
+    if (!years.length) {
+      throw new Error("O arquivo agregado não contém anos válidos.");
+    }
+
+    yearFilter.replaceChildren(
+      ...years.map((year) => new Option(year, year))
+    );
+
+    yearFilter.value = monthlyCases["2026"] ? "2026" : years[0];
+    yearFilter.disabled = false;
+
+    updateSummary(yearFilter.value);
+    updateSocialProfile(yearFilter.value);
+    renderChart(yearFilter.value);
+    initializeMap();
+  } catch (error) {
+    console.error("Erro ao carregar os dados públicos:", error);
+    showError("Não foi possível carregar os dados agregados do painel.");
   }
-);
+}
+
+loadPublicData();
